@@ -43,17 +43,25 @@ myEvents =
   ]
 ```
 
-Then use cabal run or stack or ghc to complile and run the program. I personally add a simple function in .bashrc to run the program with a simple command sch.
+Then use cabal run or stack or ghc to complile and run the program. 
+
+```bash
+git clone https://github.com/Eiko-Tokura/simple-schedule
+cd simple-schedule
+cabal run -- SimpleSchedule
+```
+
+I personally add a simple function in .bashrc to run the program with a simple command sch.
 
 ```bash
 function sch() { # use this function to run the program easily
-    pushd /path/to/code
+    pushd /path/to/code # change this to the path of the code
     cabal run -- SimpleSchedule "$@"
     popd
 }
 
 function esch() { # use this function to edit the events easily
-    nvim /path/to/code/app/MyEvents.hs
+    nvim /path/to/code/app/MyEvents.hs # change this to the path of the code
 }
 ```
 
