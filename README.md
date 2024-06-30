@@ -13,13 +13,13 @@ myEvents =
       "Example Event 1"
       [ day @. int -- @. is used to combine a day with one time interval, 
                    -- (@.) :: Day -> TI -> LocalTimeInterval
-      | day <- take 20 $ cycle [date 2024 7 1..date 2024 7 5] -- date is the synonym for fromGregorian
+      | day <- [date 2024 7 1..date 2024 7 5] -- date is the synonym for fromGregorian
       , int <- [ TI 9 30   13 30  -- TI is a constructor with 4 fields, marks a time interval
                , TI 15 30  16 30 
                ]
       ] 
       -- you can also write:
-      -- concat $ zipWith (@@) (take 20 $ cycle [date 2024 7 1..date 2024 7 5]) [TI 9 30  13 30, TI 15 30  16 30]
+      -- concat $ zipWith (@@) [date 2024 7 1..date 2024 7 5] (repeat [TI 9 30  13 30, TI 15 30  16 30])
       -- @@ is used to combine a day with a list of time intervals
       -- (@@) :: Day -> [TI] -> [LocalTimeInterval]
       EuropeLondon
