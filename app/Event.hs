@@ -33,3 +33,32 @@ data Event = Event
 instance Ord Event where
   e1 <= e2 = minimum (localTimes e1) <= minimum (localTimes e2) 
 
+-- | The following are helper functions for defining time intervals in MyEvents.hs more concisely.
+
+data TI = 
+  TI  -- ^ This represents a time interval from (hour1,min1) to (hour2,min2).
+  Int -- ^ hour1
+  Int -- ^ min1
+  Int -- ^ hour2
+  Int -- ^ min2
+
+-- | convert a time interval TI to a pair of TimeOfDay.
+ti2intv :: TI -> (TimeOfDay, TimeOfDay)
+ti2intv (TI h1 m1 h2 m2) = (TimeOfDay h1 m1 0, TimeOfDay h2 m2 0)
+
+-- | synonym for a day represented by year, month, and day.
+date :: Year -> MonthOfYear -> DayOfMonth -> Day
+date = fromGregorian
+
+dateIntvs :: Year -> MonthOfYear -> DayOfMonth -> [TI] -> [LocalTimeInterval]
+dateIntvs y m d ints = 
+  [ SameDayInterval (date y m d) intv | intv <- ti2intv <$> ints ]
+
+-- | The operator used to combine a day and a time interval.
+(@.) :: Day -> TI -> LocalTimeInterval
+day @. int = SameDayInterval day (ti2intv int)
+
+-- | The operator used to combine a day and a list of time intervals.
+(@@) :: Day -> [TI] -> [LocalTimeInterval]
+day @@ ints = [ SameDayInterval day int | int <- ti2intv <$> ints ]
+

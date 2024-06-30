@@ -11,24 +11,29 @@ myEvents :: [Event]
 myEvents = 
   [ Event
       "Example Event 1"
-      [ SameDayInterval day int
-      | day <- take 20 $ cycle [fromGregorian 2024 7 1..fromGregorian 2024 7 5]
-      , int <- [ (TimeOfDay 9 30 0, TimeOfDay 13 30 0)
-               , (TimeOfDay 15 30 0, TimeOfDay 16 30 0)
+      [ day @. int -- @. is used to combine a day with one time interval, 
+                   -- (@.) :: Day -> TI -> LocalTimeInterval
+      | day <- take 20 $ cycle [date 2024 7 1..date 2024 7 5] -- date is the synonym for fromGregorian
+      , int <- [ TI 9 30   13 30  -- TI is a constructor with 4 fields, marks a time interval
+               , TI 15 30  16 30 
                ]
-      ]
+      ] 
+      -- you can also write:
+      -- concat $ zipWith (@@) (take 20 $ cycle [date 2024 7 1..date 2024 7 5]) [TI 9 30  13 30, TI 15 30  16 30]
+      -- @@ is used to combine a day with a list of time intervals
+      -- (@@) :: Day -> [TI] -> [LocalTimeInterval]
       EuropeLondon
       (Info 
         "Example Location 1" 
-        [ ("Example Event 1", "https://example.com") 
+        [ ("Example Event Website", "https://example.com") 
         , ("Useful reference", "https://example.com/reference")
         ]
       )
 
   , Event 
       "Some Every Two Week Seminar"
-      [ SameDayInterval day (TimeOfDay 13 10 0, TimeOfDay 15 10 0)
-      | day <- concat $ take 5 $ iterate (addDays 14 <$>) [fromGregorian 2024 7 8..fromGregorian 2024 7 12] 
+      [ day @. TI 13 10   15 10
+      | day <- concat $ take 5 $ iterate (addDays 14 <$>) [date 2024 7 8..date 2024 7 12] 
       ]
       EuropeLondon
       (Info 
@@ -41,37 +46,41 @@ myEvents =
 Then use cabal run or stack or ghc to complile and run the program. I personally add a simple function in .bashrc to run the program with a simple command sch.
 
 ```bash
-function sch() {
+function sch() { # use this function to run the program easily
     pushd /path/to/code
     cabal run -- SimpleSchedule "$@"
     popd
 }
+
+function esch() { # use this function to edit the events easily
+    nvim /path/to/code/app/MyEvents.hs
+}
 ```
 
-which will produce output like this:
+which will produce output like this: (only events listed will show its information)
 
 ```plaintext
 
      9         10        11        12        13        14        15        16
-6/29 |         |         |         |         |         |         |         |
-6/30 |         |         |         |         |         |         |         |
-7/1  |    [Example Event 1         |         |    ]    |         |    [ExamEven1]
-7/2  |    [Example Event 1         |         |    ]    |         |    [ExamEven1]
-7/3  |    [Example Event 1         |         |    ]    |         |    [ExamEven1]
-7/4  |    [Example Event 1         |         |    ]    |         |    [ExamEven1]
-7/5  |    [Example Event 1         |         |    ]    |         |    [ExamEven1]
-7/6  |         |         |         |         |         |         |         |
-7/7  |         |         |         |         |         |         |         |
-7/8  |         |         |         |         |[SomeEverTwoWeekSemi]        |
-7/9  |         |         |         |         |[SomeEverTwoWeekSemi]        |
-7/10 |         |         |         |         |[SomeEverTwoWeekSemi]        |
-7/11 |         |         |         |         |[SomeEverTwoWeekSemi]        |
-7/12 |         |         |         |         |[SomeEverTwoWeekSemi]        |
-7/13 |         |         |         |         |         |         |         |
+6/30 .         .         .         .         .         .         .         .
+7/1  :    [Example Event 1         :         :    ]    :         :    [ExamEven1]
+7/2  :    [Example Event 1         :         :    ]    :         :    [ExamEven1]
+7/3  :    [Example Event 1         :         :    ]    :         :    [ExamEven1]
+7/4  :    [Example Event 1         :         :    ]    :         :    [ExamEven1]
+7/5  :    [Example Event 1         :         :    ]    :         :    [ExamEven1]
+7/6  .         .         .         .         .         .         .         .
+7/7  .         .         .         .         .         .         .         .
+7/8  :         :         :         :         :[SomeEverTwoWeekSemi]        :
+7/9  :         :         :         :         :[SomeEverTwoWeekSemi]        :
+7/10 :         :         :         :         :[SomeEverTwoWeekSemi]        :
+7/11 :         :         :         :         :[SomeEverTwoWeekSemi]        :
+7/12 :         :         :         :         :[SomeEverTwoWeekSemi]        :
+7/13 .         .         .         .         .         .         .         .
+7/14 .         .         .         .         .         .         .         .
 
 Example Event 1
   @Example Location 1
-  Example Event 1: https://example.com
+  Example Event Website: https://example.com
   Useful reference: https://example.com/reference
 
 Some Every Two Week Seminar
@@ -80,7 +89,7 @@ Some Every Two Week Seminar
 
 ```
 
-You can run the program with a number parameter to specify the number of future days to show. Default is 14 days. The width of the display is adjustable in the code.
+You can run the program with a number parameter to specify the number of future days to show. Default is 14 days (changable in Main.hs). The width and style of the display is adjustable in the code (in TimeTable.hs).
 
 This is a very simple program and you are welcomed to modify or improve it!
 
