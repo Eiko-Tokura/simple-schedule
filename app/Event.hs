@@ -62,3 +62,11 @@ day @. int = SameDayInterval day (ti2intv int)
 (@@) :: Day -> [TI] -> [LocalTimeInterval]
 day @@ ints = [ SameDayInterval day int | int <- ti2intv <$> ints ]
 
+-- | This function is used to generate a weekly repeating event.
+repeatWeeklyBetween
+    :: (Day, Day) -> [DayOfWeek] -> [TI] -> [LocalTimeInterval]
+repeatWeeklyBetween (start, end) days times =
+  concatMap (\d -> map (d @.) times) $
+    takeWhile (<= end) $
+      dropWhile (< start) $
+        filter (\d -> dayOfWeek d `elem` days) [start..end]
