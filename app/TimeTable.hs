@@ -48,7 +48,7 @@ showTimeTable events (st, ed)
             | OnlyDay _ <- head $ localTimes ev = False
             | _ <- localTimes ev = True
     ]
-    where hourWidth = 10
+    where hourWidth = 9
           dateWidth = 5
           minHour = minimum [ todHour ts' | eventsInRow' <- timeBlocks, (ts',_,_) <- eventsInRow' ]
           maxHour = maximum [ todHour te' | eventsInRow' <- timeBlocks, (_,te',_) <- eventsInRow' ]
@@ -96,14 +96,23 @@ showInfos events (st, ed) = intercalate "\n\n"
 
 -- | Shorten a string to within a given length by abbreviating each word.
 shorten :: Int -> String -> String
-shorten n str = head $ filter ((<= n) . length)
-  (  [ str ]
-  ++ [ concatMap (take i . capitalizeHead) (words str) | i <- [20,19..1] ]
-  ++ [ take n str ] -- proved to return, so it's safe to use head
-  )
+shorten n str 
+  = last 
+  $ takeWhile ((<= n) . length) 
+  $ shortens (unwords $ map capitalizeHead $ words str)
   where
     capitalizeHead [] = []
     capitalizeHead (c:cs) = toUpper c : cs
+
+-- | Generate all possible ways to shorten a string by abbreviating each word, Internal function, produce an increasing infinite list of strings with each word shortened.
+shortens :: String -> [String]
+shortens str = concat <$> go (words str)
+  where 
+    go ws = gradualList (heads ws) ++ map (zipWith (++) (heads ws)) (go (drop 1 <$> ws))
+    heads ws 
+      | all null ws = [" " | _ <- ws]
+      | otherwise   = [take 1 w | w <- ws]
+    gradualList xs = [ take i xs ++ replicate (length xs - i) "" | i <- [1..length xs] ]
 
 -- | this type is used to render and represent a 2D image. Note that we enforce that the latter terms can override the former terms.
 type StringImage = [((Int, Int), String)]
